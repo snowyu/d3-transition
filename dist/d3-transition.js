@@ -5,7 +5,7 @@ typeof define === 'function' && define.amd ? define(['exports', 'd3-selection', 
 (global = global || self, factory(global.d3 = global.d3 || {}, global.d3, global.d3, global.d3, global.d3, global.d3, global.d3));
 }(this, function (exports, d3Selection, d3Dispatch, d3Timer, d3Interpolate, d3Color, d3Ease) { 'use strict';
 
-var emptyOn = d3Dispatch.dispatch("start", "end", "cancel", "interrupt");
+var emptyOn = d3Dispatch.dispatch("start", "end", "cancel", "interrupt", "progress");
 var emptyTween = [];
 
 var CREATED = 0;
@@ -133,15 +133,22 @@ function create(node, id, self) {
 
   function getProgress(elapsed) {
     if (self.paused) {
-      if (self.progress >= 0) elapsed = self.progress * self.duration;
-      else self.progress = elapsed / self.duration;
+      if (self.progress >= 0) {
+        elapsed = self.progress * self.duration;
+      } else {
+        self.progress = elapsed / self.duration;
+        self.on.call("progress", node, node.__data__, self.index, self.group, self.progress);
+      }
     } else if (self.progress >= 0) {
       self.timer.restart(tick, 0, self.time + self.progress * self.duration);
-      elapsed = self.progress = -1;
-    } else if (elapsed >= self.duration) {
-      self.progress = -1;
+      elapsed = self.progress = - (self.progress + 1e-10);
     } else {
-      self.progress = - (elapsed / self.duration);
+      if (elapsed >= self.duration) {
+        self.progress = -1;
+      } else {
+        self.progress = - (elapsed / self.duration);
+      }
+      self.on.call("progress", node, node.__data__, self.index, self.group, -self.progress);
     }
     return elapsed;
   }
