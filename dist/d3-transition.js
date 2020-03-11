@@ -138,8 +138,11 @@ function create(node, id, self) {
     } else if (self.progress >= 0) {
       self.timer.restart(tick, 0, self.time + self.progress * self.duration);
       elapsed = self.progress = -1;
-    } else
+    } else if (elapsed >= self.duration) {
+      self.progress = -1;
+    } else {
       self.progress = - (elapsed / self.duration);
+    }
     return elapsed;
   }
 
@@ -811,6 +814,11 @@ function progressConstant(id, value) {
   };
 }
 
+function abs(value) {
+  if (value < 0) value = -value;
+  return value;
+}
+
 function transition_progress(value) {
   var id = this._id;
 
@@ -818,7 +826,7 @@ function transition_progress(value) {
       ? this.each((typeof value === "function"
           ? progressFunction
           : progressConstant)(id, value))
-      : get(this.node(), id).progress;
+      : abs(get(this.node(), id).progress);
 }
 
 var id = 0;
