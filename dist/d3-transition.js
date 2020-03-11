@@ -133,12 +133,13 @@ function create(node, id, self) {
 
   function getProgress(elapsed) {
     if (self.paused) {
-      if (self.progress >= 0) elapsed = -1;
+      if (self.progress >= 0) elapsed = self.progress * self.duration;
       else self.progress = elapsed / self.duration;
     } else if (self.progress >= 0) {
       self.timer.restart(tick, 0, self.time + self.progress * self.duration);
       elapsed = self.progress = -1;
-    }
+    } else
+      self.progress = - (elapsed / self.duration);
     return elapsed;
   }
 
